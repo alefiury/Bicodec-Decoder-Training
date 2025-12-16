@@ -1,0 +1,110 @@
+title: "SparkTTS-24kHz-Decoder-Fine-tuning"
+wandb_project_name: "SparkTTS-Upsample-24kHz"
+wandb_entity: "alefiury"
+
+model:
+    pretrained_dir: /home/alef-iury/Vídeos/bicodec-decoder-train/pretrained_models/Spark-TTS-0.5B
+    device: cuda
+
+    # Train options
+    train:
+        decoder_only: true
+        prenet_postnet: false
+
+    # Initialize
+    init:
+        reuse_16k_decoder_weights: true
+
+    # Decoder override for 24 kHz generation:
+    # 16 kHz uses product 320 (=8*5*4*2), 24 kHz uses product 480 (=8*5*4*3)
+    decoder_override:
+        enabled: true
+        rates: [8, 5, 4, 3]
+        kernel_sizes:
+
+data:
+    train_manifest: data/manifest_train.jsonl
+    val_manifest: data/manifest_val.jsonl
+
+    fps: 50
+    target_sample_rate: 24000
+    encoder_sample_rate: 16000
+
+    segment_seconds: 2.56
+    ref_seconds: 3.00
+    align_to_frames: true
+
+    cache:
+        enabled: false
+        dir: cache/train
+        cache_dvector: false
+
+    val_cache:
+        enabled: false
+        dir: cache/val
+        cache_dvector: false
+
+train:
+    batch_size: 4
+    val_batch_size: 8
+    num_workers: 10
+
+    lr: 2.0e-4
+    weight_decay: 0.0
+    betas: [0.8, 0.99]
+
+    lr_disc: 2.0e-4
+    betas_disc: [0.8, 0.99]
+
+trainer:
+    accelerator: "gpu"
+    max_steps: 500000
+    # max_epochs: 3
+    num_sanity_val_steps: 2
+    overfit_batches: 0.0
+    log_every_n_steps: 10
+    gradient_clip_val: 10.0
+    gradient_clip_algorithm: "norm"
+    val_check_interval: 10000
+    accumulate_grad_batches: 1
+    precision: bf16
+
+model_checkpoint:
+    mode: "min"
+    save_top_k: 3
+    save_last: true
+    every_n_train_steps: 10000
+    monitor: "val/loss"
+    dirpath: "./checkpoints/Spark-TTS-Decoder"
+    filename: "{epoch:02d}-{step:02d}-{val/loss_epoch:.3f}"
+
+loss:
+    use_gan: false
+
+    wave_l1_weight: 1.0
+    mel_weight: 45.0
+    stft_weight: 1.0
+
+    mel:
+        n_fft: 1024
+        hop_length: 240   # ~10ms at 24k
+        win_length: 1024
+        n_mels: 80
+        f_min: 0.0
+        f_max: 12000.0
+
+    stft:
+        configs:
+            - {fft_size: 1024, hop_size: 240, win_length: 1024}
+            - {fft_size: 2048, hop_size: 480, win_length: 2048}
+            - {fft_size: 512,  hop_size: 120, win_length: 512}
+
+    gan:
+        adv_weight: 1.0
+        fm_weight: 2.0
+
+tags:
+    - SparkTTS
+    - Decoder
+    - Fine-tuning
+    - 24kHz

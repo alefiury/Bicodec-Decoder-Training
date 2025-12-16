@@ -1,0 +1,9 @@
+torch>=2.1
+torchaudio>=2.1
+lightning>=2.2
+omegaconf>=2.3
+pyyaml>=6.0
+transformers>=4.40
+soundfile>=0.12
+tqdm>=4.66
+numpy>=1.23
