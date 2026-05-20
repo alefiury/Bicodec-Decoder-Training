@@ -114,7 +114,7 @@ python -m bicodec_train.train \
   exp.out_dir=outputs/decoder16k_ft
 ```
 
-## Notes on losses
+## Losses
 
 Default config uses a **non-adversarial** set of losses (fast + stable):
 - multi-resolution STFT
@@ -122,13 +122,4 @@ Default config uses a **non-adversarial** set of losses (fast + stable):
 - waveform L1
 
 You can enable a HiFi-GAN style discriminator with feature matching:
-`loss.use_gan: true` (see configs).
-
----
-
-## Troubleshooting
-
-- If the saved audio plays at the wrong speed, check that you are writing with the correct sample rate.
-  This trainer writes reconstructions using `data.target_sample_rate`.
-- If you get off-by-one length mismatches, set `data.align_to_frames: true` (default) and use frame-aligned starts.
-
+`loss.use_gan: true`
