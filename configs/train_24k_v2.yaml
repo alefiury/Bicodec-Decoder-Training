@@ -3,7 +3,7 @@ wandb_project_name: "SparkTTS-Upsample-24kHz"
 wandb_entity: "alefiury"
 
 model:
-    pretrained_dir: /home/alef-iury/Vídeos/bicodec-decoder-train/pretrained_models/Spark-TTS-0.5B
+    pretrained_dir: pretrained_models/Spark-TTS-0.5B
     device: cuda
 
     # Train options
