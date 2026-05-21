@@ -7,9 +7,9 @@ This repository provides a **decoder-only** training pipeline for Spark-TTS **Bi
   and only changing the **waveform generator upsampling** from `320 (= 16k/50)` to `480 (= 24k/50)`.
 
 The intended usage is:
-- start from a **pretrained Spark-TTS BiCodec checkpoint directory** (local files, no internet),
-- optionally **reuse** the 16 kHz decoder weights for all matching layers,
-- train a new decoder that outputs **24 kHz** audio.
+- Start from a **pretrained Spark-TTS BiCodec checkpoint directory**
+- Optionally **reuse** the 16 kHz decoder weights for all matching layers
+- Train a new decoder that outputs **24 kHz** audio.
 
 ## 0) Assumptions
 
@@ -24,8 +24,8 @@ pretrained_models/SparkTTS-0.5B/
 ```
 
 This trainer uses the same wav2vec2 feature extraction as Spark-TTS:
-- audio is **resampled to 16 kHz** for wav2vec2 features,
-- the decoder is trained to reconstruct **target audio** at 16 kHz or 24 kHz.
+- Audio is **resampled to 16 kHz** for wav2vec2 features,
+- The decoder is trained to reconstruct **target audio** at 16 kHz or 24 kHz.
 
 > If your dataset is truly native 24 kHz, the 24 kHz decoder learns a bandwidth-extension / upsampling prior
 > conditioned on the same 50-tps features.
@@ -63,7 +63,7 @@ Each line is like:
 {"audio_path": "/abs/path/file.wav", "duration_sec": 4.83}
 ```
 
-## 3) (Optional) Precompute features cache (recommended)
+## 3) (Optional) Precompute features cache
 
 This caches wav2vec2 features (50 fps) and an optional speaker condition vector.
 
