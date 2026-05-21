@@ -1,6 +1,6 @@
 # BiCodec Decoder Training (16 kHz and 24 kHz)
 
-This repository provides a **decoder-only** training pipeline for Spark-TTS **BiCodec**:
+This repository provides an unofficial **decoder-only** training pipeline for [**Spark-TTS**](https://arxiv.org/abs/2503.01710) **BiCodec**:
 
 - Train / fine-tune the **16 kHz decoder** (original BiCodec).
 - Train / fine-tune a **24 kHz decoder** by **keeping the encoder + quantizer + speaker encoder unchanged**
@@ -11,7 +11,7 @@ The intended usage is:
 - Optionally **reuse** the 16 kHz decoder weights for all matching layers
 - Train a new decoder that outputs **24 kHz** audio.
 
-## 0) Assumptions
+## Prerequisites
 
 You have a local Spark-TTS pretrained model directory like:
 
@@ -30,7 +30,7 @@ This trainer uses the same wav2vec2 feature extraction as Spark-TTS:
 > If your dataset is truly native 24 kHz, the 24 kHz decoder learns a bandwidth-extension / upsampling prior
 > conditioned on the same 50-tps features.
 
-## 1) Install
+## Install
 
 Create a venv and install:
 
@@ -44,7 +44,7 @@ Install Spark-TTS **editable** (so we can import `sparktts.*`):
 pip install -e /path/to/Spark-TTS-main
 ```
 
-## 2) Prepare a manifest
+## Prepare a Metadata Manifest
 
 Make a JSONL manifest from a folder of audio files:
 
@@ -63,7 +63,7 @@ Each line is like:
 {"audio_path": "/abs/path/file.wav", "duration_sec": 4.83}
 ```
 
-## 3) (Optional) Precompute features cache
+## Precompute Features (Optional) 
 
 This caches wav2vec2 features (50 fps) and an optional speaker condition vector.
 
@@ -77,7 +77,7 @@ python scripts/precompute_cache.py \
 
 Do the same for val.
 
-## 4) Train 24 kHz decoder (decoder-only)
+## Train 24 kHz decoder (decoder-only)
 
 ```bash
 python -m bicodec_train.train \
@@ -93,9 +93,9 @@ python -m bicodec_train.train \
 ### Reuse weights from a 16 kHz decoder checkpoint
 
 If your `pretrained_dir` is 16 kHz BiCodec (original), the trainer will:
-- build a 24 kHz WaveGenerator with rates `[8,5,4,3]`,
-- load the 16 kHz decoder state dict **with `strict=False`** so matching layers are reused,
-- re-init the new last upsampling block (shape mismatch).
+- Build a 24 kHz WaveGenerator with rates `[8,5,4,3]`,
+- Load the 16 kHz decoder state dict **with `strict=False`** so matching layers are reused,
+- Re-init the new last upsampling block (shape mismatch).
 
 This behavior is controlled by:
 
@@ -103,7 +103,7 @@ This behavior is controlled by:
 model.init.reuse_16k_decoder_weights: true
 ```
 
-## 5) Fine-tune a 16 kHz decoder (decoder-only)
+## Fine-Tune a 16 kHz Decoder (Decoder-only)
 
 ```bash
 python -m bicodec_train.train \
@@ -117,9 +117,14 @@ python -m bicodec_train.train \
 ## Losses
 
 Default config uses a **non-adversarial** set of losses (fast + stable):
-- multi-resolution STFT
-- mel L1
-- waveform L1
+- Multi-resolution STFT
+- Mel L1
+- Waveform L1
 
-You can enable a HiFi-GAN style discriminator with feature matching:
+You can also enable a HiFi-GAN style discriminator:
 `loss.use_gan: true`
+
+## Acknowledgements
+
+- [**Spark-TTS**](https://github.com/sparkaudio/spark-tts)
+- [**HifiGAN**](https://github.com/jik876/hifi-gan)
